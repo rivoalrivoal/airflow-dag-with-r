@@ -1,37 +1,32 @@
+# Verifier la version utilisée par le Helm
+# https://github.com/apache/airflow/blob/helm-chart/1.21.0/chart/Chart.yaml#L23
 FROM apache/airflow:3.2.0
+
+# https://github.com/r-lib/rig
+ARG RIG_VERSION=0.8.0
+# https://www.r-project.org/
+ARG R_VERSION=4.6
 
 USER root
 
-# R 4.6 (depot CRAN officiel pour Bookworm) + libs de base pour les paquets
-# tidyverse compiles via binaires Posit PPM (curl/ssl/xml2/fonts/...).
+# Neutralise le user-library de R (chemin absolu qui n'est pas un repertoire => R l'ignore).
+# install.packages tombe alors par defaut dans .Library, accessible a tous les users.
+ENV R_LIBS_USER=/dev/null
+
+# rig (R Installation Manager, par r-lib/Posit) tire des binaires R prebuilt depuis Posit r-builds.
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
-        ca-certificates gnupg dirmngr \
+        ca-certificates curl \
         libcurl4 libssl3 libxml2 \
         libfontconfig1 libharfbuzz0b libfribidi0 \
         libfreetype6 libpng16-16 libtiff6 libjpeg62-turbo \
-    && install -d -m 0755 /etc/apt/keyrings \
-    && gpg --keyserver keyserver.ubuntu.com \
-        --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7' \
-    && gpg --armor --export '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7' \
-        > /etc/apt/keyrings/cran.asc \
-    && printf 'Types: deb\nURIs: https://cloud.r-project.org/bin/linux/debian/\nSuites: bookworm-cran46/\nComponents:\nSigned-By: /etc/apt/keyrings/cran.asc\n' \
-        > /etc/apt/sources.list.d/cran.sources \
-    && apt-get update \
-    && apt-get install -y --no-install-recommends r-base \
+    && curl -fsSL "https://github.com/r-lib/rig/releases/download/v${RIG_VERSION}/rig-linux-${RIG_VERSION}.tar.gz" \
+        | tar xz -C /usr/local \
+    && rig add "${R_VERSION}" \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Pointer R sur Posit Public Package Manager pour servir des paquets binaires
-# Bookworm (sinon install.packages tombe sur du source -> tres long).
-RUN printf '%s\n' \
-        'options(' \
-        '  HTTPUserAgent = sprintf("R/%s R (%s)", getRversion(), paste(getRversion(), R.version$platform, R.version$arch, R.version$os)),' \
-        '  repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/bookworm/latest")' \
-        ')' \
-        > /usr/lib/R/etc/Rprofile.site
-
-# Installer tidyverse dans la site-library partagee.
+# Installer tidyverse
 RUN R -e "install.packages('tidyverse')" \
     && R -e "if (!requireNamespace('tidyverse', quietly = TRUE)) quit(status = 1)"
 
