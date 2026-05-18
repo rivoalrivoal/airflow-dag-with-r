@@ -2,12 +2,13 @@
 # Pipeline : telecharge file.csv depuis S3 (MinIO), ajoute une colonne total,
 # uploade result_YYYYMMDD_HHMM.csv (heure de Paris) dans le meme bucket.
 
-if (!requireNamespace("paws.storage", quietly = TRUE)) {
-  install.packages("paws.storage", repos = "https://cloud.r-project.org")
-}
+needed <- c("readr", "dplyr", "paws.storage")
+missing <- needed[!vapply(needed, requireNamespace, logical(1), quietly = TRUE)]
+if (length(missing)) install.packages(missing)
 
 suppressPackageStartupMessages({
-  library(tidyverse)
+  library(readr)
+  library(dplyr)
   library(paws.storage)
 })
 

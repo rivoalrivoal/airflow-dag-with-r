@@ -26,8 +26,10 @@ RUN apt-get update \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Installer tidyverse
-RUN R -e "install.packages('tidyverse')" \
-    && R -e "if (!requireNamespace('tidyverse', quietly = TRUE)) quit(status = 1)"
+# Configurer Posit Public Package Manager (binaires Linux precompiles) comme repo CRAN par defaut.
+# Les packages R seront installes au runtime dans le script R, mais profiteront ainsi des binaires (pas de compilation gcc).
+RUN . /etc/os-release \
+    && echo "options(repos = c(CRAN = \"https://packagemanager.posit.co/cran/__linux__/${VERSION_CODENAME}/latest\"))" \
+        > "$(R RHOME)/etc/Rprofile.site"
 
 USER airflow
