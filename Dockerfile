@@ -10,9 +10,7 @@ ARG RIG_VERSION=latest
 
 USER root
 
-# Neutralise le user-library de R (chemin absolu qui n'est pas un repertoire => R l'ignore).
-# install.packages tombe alors par defaut dans .Library, accessible a tous les users.
-ENV R_LIBS_USER=/dev/null
+ENV R_LIBS_USER=~/.R/library
 
 # rig (R Installation Manager, par r-lib/Posit) tire des binaires R prebuilt depuis Posit r-builds.
 RUN apt-get update \

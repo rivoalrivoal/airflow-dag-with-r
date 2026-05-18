@@ -11,9 +11,8 @@ import os
 import subprocess
 from datetime import datetime, timedelta
 
-from airflow.hooks.base import BaseHook
 from airflow.providers.standard.operators.bash import BashOperator
-from airflow.sdk import DAG, task
+from airflow.sdk import DAG, BaseHook, task
 
 DAG_DIR = os.path.dirname(os.path.abspath(__file__))
 R_SCRIPT = os.path.join(DAG_DIR, "scripts", "example.R")
