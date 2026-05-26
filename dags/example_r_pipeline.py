@@ -17,14 +17,13 @@ from airflow.sdk import DAG, BaseHook, task
 DAG_DIR = os.path.dirname(os.path.abspath(__file__))
 R_SCRIPT = os.path.join(DAG_DIR, "scripts", "example.R")
 
-CONN_ID = "minio-s3-hp"
+CONN_ID = "minio-s3"
 
 default_args = {
     "depends_on_past": False,
     "retries": 1,
     "retry_delay": timedelta(minutes=2),
 }
-
 
 with DAG(
     dag_id="example_r_pipeline",

@@ -33,3 +33,6 @@ RUN . /etc/os-release \
         > "$(R RHOME)/etc/Rprofile.site"
 
 USER airflow
+
+# Pour utiliser la partie SSO
+RUN pip install --no-cache-dir authlib==1.7.2
