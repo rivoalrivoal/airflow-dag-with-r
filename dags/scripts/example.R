@@ -40,7 +40,7 @@ resp <- s3$get_object(Bucket = bucket, Key = "file.csv")
 writeBin(resp$Body, tmp_in)
 
 df <- read_csv2(tmp_in, show_col_types = FALSE)
-df <- df |> mutate(total = rowSums(across(where(is.numeric))))
+df <- df |> mutate(total = col1 - col2)
 
 tmp_out <- tempfile(fileext = ".csv")
 write_csv2(df, tmp_out)
